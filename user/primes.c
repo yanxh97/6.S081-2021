@@ -12,14 +12,12 @@ main(int argc, char *argv[])
   pipe(p);
   pid = fork();
   if (pid != 0){
-    // write to the pipe from 2 to 35, ending with a 0
+    // write to the pipe from 2 to 35, close the write pipe at end
     close(p[0]);
-    for (int i=2; i<=35 ;i++){
+    for (int i=2; i<=50 ;i++){
       write(p[1], &i, 4);
     }
-    int last = 0;
-    write(p[1], &last, 4);
-
+    close(p[1]);
     int status;
     wait(&status);
     exit(0);
@@ -30,11 +28,10 @@ main(int argc, char *argv[])
   //  printf("prime %d\n", pid);
    // exit(0);
   //}
+  close(p[1]);
   while (1){
     int primenumber;
-    close(p[1]);
-    read(p[0], &primenumber, 4);
-    if (primenumber == 0){
+    if (read(p[0], &primenumber, 4) == 0){
     	exit(0);
     }
     printf("prime %d\n", primenumber);
@@ -43,23 +40,26 @@ main(int argc, char *argv[])
     pipe(p2);
     pid = fork();
     if (pid == 0){
+      close(p[0]);
+      // don't close the pipe twice!
+      //close(p[1]);
       p[0] = p2[0];
       p[1] = p2[1];
+      close(p[1]);
     }
     else{
       int number = primenumber;
       close(p2[0]);
-      while (number != 0){
-        read(p[0], &number, 4);
-	if (number == 0 || number % primenumber != 0){
+      while (read(p[0], &number, 4) != 0){
+        if (number % primenumber != 0)
 	  write(p2[1], &number, 4);
-	}
       }
+      close(p[0]);
+      close(p2[1]);
       int status;
       wait(&status);
       exit(0);
     }
 
   }
-
 }
