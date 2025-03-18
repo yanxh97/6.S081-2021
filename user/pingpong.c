@@ -16,7 +16,9 @@ main(int argc, char *argv[])
     close(pipePtoC[0]);
     close(pipeCtoP[1]);
     write(pipePtoC[1], "a", 1);
+    close(pipePtoC[1]);
     read(pipeCtoP[0], buf, 1);
+    close(pipeCtoP[0]);
     printf("%d: received pong\n", getpid());
     wait(&status);
   }
@@ -24,8 +26,10 @@ main(int argc, char *argv[])
     close(pipePtoC[1]);
     close(pipeCtoP[0]);
     read(pipePtoC[0], buf, 1);
+    close(pipePtoC[0]);
     printf("%d: received ping\n", getpid());
     write(pipeCtoP[1], "b", 1); 
+    close(pipeCtoP[1]);
   }
   exit(0);
 }

@@ -14,7 +14,7 @@ main(int argc, char *argv[])
   if (pid != 0){
     // write to the pipe from 2 to 35, close the write pipe at end
     close(p[0]);
-    for (int i=2; i<=50 ;i++){
+    for (int i=2; i<=35 ;i++){
       write(p[1], &i, 4);
     }
     close(p[1]);
@@ -32,6 +32,7 @@ main(int argc, char *argv[])
   while (1){
     int primenumber;
     if (read(p[0], &primenumber, 4) == 0){
+	close(p[0]);
     	exit(0);
     }
     printf("prime %d\n", primenumber);
