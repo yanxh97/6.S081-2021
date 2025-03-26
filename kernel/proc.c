@@ -677,3 +677,27 @@ procdump(void)
     printf("\n");
   }
 }
+
+int
+pgaccess(uint64 va, int numPage, uint64 resa)
+{
+  // max numPage would be 8*64
+  char tmpbuf[64] = {0};
+
+  pagetable_t pagetable = myproc()->pagetable;
+  pte_t *pte;
+
+  for (int pos = 0; pos < numPage; va+=PGSIZE, pos++){
+    if (va >= MAXVA)
+      panic("pgaccess");
+    
+    pte = walk(pagetable, va, 0);
+    if (pte == 0){
+      continue;
+    }
+    if (*pte & PTE_A)
+      tmpbuf[pos/8] |= (1 << (pos % 8));
+    *pte &= (~PTE_A);
+  }
+  return copyout(pagetable, resa, tmpbuf, (numPage+7)/8);
+}
